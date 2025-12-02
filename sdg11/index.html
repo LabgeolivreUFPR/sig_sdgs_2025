@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Trabalho Final de SIG</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+    .box {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.6);
+      padding: 8px 10px;
+      margin-bottom: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+
+      font-family: "Arial", "sans-serif";
+      font-size: 14px;
+      pointer-events: auto;
+      line-height: 28px;
+      z-index: 2000;
+    }
+    #lineLayers {
+      top: 10px;
+      right: 10px;
+    }
+    #polyLayers {
+      top: 250px;
+      right: 10px;
+      margin-top: 70px;
+    }
+    #creatorBox {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      margin-left: 10px;
+      z-index: 2000;
+      font-family: "Arial", "sans-serif";
+      font-size: 12px
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="creatorBox"><i>Feito por Christopher Pinheiro Dobb e João Victor Correia Stoski</i></div>
+  <div class="box" id="lineLayers">
+    <b>Camadas de linhas</b><br>
+    <label><input type="radio" name="lineLayer" value="none" checked> Desabilitado</label><br>
+    <label><input type="radio" name="lineLayer" value="bus_size"> Capacidade do ônibus</label><br>
+    <label><input type="radio" name="lineLayer" value="tourism"> Linha de turismo</label><br>
+    <i>Período de passagem (dia útil)</i><br>
+    <label><input type="radio" name="lineLayer" value="freq_day"> Geral</label><br>
+    <label><input type="radio" name="lineLayer" value="freq_peak1"> Primeiro pico (5:00 - 8:30)</label><br>
+    <label><input type="radio" name="lineLayer" value="freq_off1"> Tarde (8:30 - 17:30)</label><br>
+    <label><input type="radio" name="lineLayer" value="freq_peak2"> Segundo pico (17:30 - 19:00)</label><br>
+    <label><input type="radio" name="lineLayer" value="freq_off2"> Noite (19:00 - 5:00)</label><br>
+  </div>
+  <div class="box" id="polyLayers">
+    <b>Camadas de fundo</b><br>
+    <label><input type="radio" name="polyLayer" value="none" checked> Desabilitado</label><br>
+    <label><input type="radio" name="polyLayer" value="stop_density"> Densidade de pontos por bairro</label><br>
+    <label><input type="radio" name="polyLayer" value="coverage"> Cobertura dos terminais</label><br>
+    <label><input type="radio" name="polyLayer" value="coverage_pop"> População das coberturas</label><br>
+  </div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const lineTranslator = {
+      bus_size: "capacidade",
+      freq_day: "periodo_geral",
+      freq_peak1: "periodo_pico1",
+      freq_off1: "periodo_fora1",
+      freq_peak2: "periodo_pico2",
+      freq_off2: "periodo_fora2",
+    }
+
+    let activeLineLayer = null;
+    let activeExtras = [];
+    function switchLineLayer(layerTag) {
+      console.log(activeExtras);
+      if (activeLineLayer) {
+        while (activeExtras.length) {
+          map.removeLayer(activeExtras.pop());
+        }
+        map.removeLayer(activeLineLayer);
+        activeLineLayer = null;
+      }
+      if (layerTag !== "none" && busLinesData) {
+        // Tourism layer with extra features
+        if (layerTag === "tourism") {
+          activeLineLayer = L.geoJSON(busLinesData, {
+            filter: function(feature) {
+              return feature.properties.categoria_servico === "JARDINEIRA";
+            },
+            style: {
+              color: "#518e36",
+              weight: 2
+            },
+            pane: "linesPane"
+          }).addTo(map);
+          activeExtras.push(L.geoJSON(parkData, {
+            style: {
+              fillColor: "#85b66f",
+              color: "#3f5634",
+              fillOpacity: 0.7,
+              weight: 1,
+            },
+            pane: "extraPane",
+            onEachFeature: function(feature, layer) {
+              layer.bindPopup(`${feature.properties.TEXTO_MAPA}`);
+            }
+          }).addTo(map));
+          activeExtras.push(L.geoJSON(tourismStopsData, {
+            pointToLayer: function(feature, latlng) {
+              return L.circleMarker(latlng, {
+                radius: 5,
+                fillColor: "#fff",
+                color: "#3f5634",
+                weight: 2,
+                opacity: 1.0,
+                fillOpacity: 1.0,
+                pane: "extraPane"
+              });
+            },
+            onEachFeature: function(feature, layer) {
+              layer.bindPopup(`<b>Ponto de parada:</b><br>${feature.properties.nome_ponto}`);
+            }
+          }).addTo(map));
+        }
+        // Other line layers
+        else {
+          const field = lineTranslator[layerTag];
+          activeLineLayer = L.geoJSON(busLinesData, {
+              style: function(feature) {return {
+                color: feature.properties[field],
+                weight: 2
+              }},
+              pane: "linesPane",
+              onEachFeature: function(feature, layer) {
+                layer.bindPopup(`
+                <b>Código:</b> ${feature.properties.cod}<br>
+                <b>Nome:</b> ${feature.properties.nome_linha}<br>
+                <b>Tipo:</b> ${feature.properties.categoria_servico}<br>
+                <b>Valor:</b> ${feature.properties["num_" + field]}<br>
+                `);
+              }
+          }).addTo(map);
+        }
+      }
+    }
+    
+    let activePolyLayer = null;
+    function switchPolyLayer(layerTag) {
+      if (activePolyLayer) {
+        map.removeLayer(activePolyLayer);
+        activePolyLayer = null;
+      }
+      if (!coverageData) return;
+      switch (layerTag) {
+        case "stop_density":
+          activePolyLayer = L.geoJSON(bairroData, {
+              style: function(feature) {return {
+                color: '#000',
+                fillColor: feature.properties.densidade,
+                weight: 1,
+                fillOpacity: 0.7,
+                opacity: 1.0
+              }},
+              pane: "polyPane",
+              onEachFeature: function(feature, layer) {
+                layer.bindPopup(`
+                <b>Bairro:</b> ${feature.properties.NOME}<br>
+                <b>Densidade de paradas:</b> ${feature.properties.Densidade_paradas}<br>
+                `);
+              }
+          }).addTo(map);
+          break;
+        case "coverage":
+          activePolyLayer = L.geoJSON(coverageData, {
+            style: function(feature) {return {
+              fillColor: "#" + ((1 << 24) * Math.random() | 0).toString(16).padStart(6, "0"),
+              color: "#000",
+              weight: 1,
+              fillOpacity: 0.2,
+              opacity: 1.0
+            }},
+            pane: "polyPane",
+            onEachFeature: function(feature, layer) {
+              layer.bindPopup(`
+              <b>Terminal:</b> ${feature.properties.nome}<br>
+              <b>População:</b> ${feature.properties.pop}
+              `);
+            }
+          }).addTo(map);
+          break;
+        case "coverage_pop":
+          activePolyLayer = L.geoJSON(coverageData, {
+            style: function(feature) {return {
+              fillColor: feature.properties.population,
+              fillOpacity: 0.7,
+              color: "#000",
+              weight: 1,
+              opacity: 1.0
+            }},
+            pane: "polyPane",
+            onEachFeature: function(feature, layer) {
+              layer.bindPopup(`
+              <b>Terminal:</b> ${feature.properties.nome}<br>
+              <b>População:</b> ${feature.properties.pop}
+              `);
+            }
+          }).addTo(map);
+          break;
+      }
+    }
+    
+    // Load JSONs
+    let busLinesData = null;
+    fetch("geojson/bus_lines.geojson")
+      .then(response => response.json())
+      .then(data => {busLinesData = data;})
+      .catch(error => console.error("Error loading \"bus_lines.geojson\":", error));
+    let bairroData = null;
+    fetch("geojson/bairros.geojson")
+      .then(response => response.json())
+      .then(data => {bairroData = data;})
+    let coverageData = null;
+    fetch("geojson/terminal_coverage.geojson")
+      .then(response => response.json())
+      .then(data => {coverageData = data;})
+    let parkData = null;
+    fetch("geojson/parks.geojson")
+      .then(response => response.json())
+      .then(data => {parkData = data;})
+    let tourismStopsData = null;
+    fetch("geojson/tourism_stops.geojson")
+      .then(response => response.json())
+      .then(data => {tourismStopsData = data;})
+
+    const map = L.map('map', {
+      center: [-25.488009147759662, -49.28049770288324],
+      zoom: 11
+    });
+    map.createPane("linesPane");
+    map.getPane("linesPane").style.zIndex = 500;
+    map.createPane("polyPane");
+    map.getPane("polyPane").style.zIndex = 450;
+    map.createPane("extraPane");
+    map.getPane("extraPane").style.zIndex = 550;
+
+    // OSM background
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Layer toggle
+    document.querySelectorAll("input[name='lineLayer']").forEach(r => {
+      r.addEventListener("change", e => switchLineLayer(e.target.value));
+    });
+    document.querySelectorAll("input[name='polyLayer']").forEach(r => {
+      r.addEventListener("change", e => switchPolyLayer(e.target.value));
+    });
+  </script>
+</body>
+</html>
