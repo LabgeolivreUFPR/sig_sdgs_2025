@@ -69,3 +69,7 @@ Bairros para contextualização administrativa.
 
 🔗Mapa Web (Exemplo):'file:///C:/sdg11_cidades_sustentaveis/qgis2web_2025_12_01-21_56_47_585823/index.html#11/-25.4966/-49.3595'
 
+<img width="952" height="892" alt="Captura de tela 2025-12-01 230041" src="https://github.com/user-attachments/assets/4e916c17-7c77-467e-adad-9fbba809e1cb" />
+
+
+
