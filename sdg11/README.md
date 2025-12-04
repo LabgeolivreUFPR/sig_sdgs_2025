@@ -61,8 +61,8 @@ Quanto mais escuro a coloração da área, maior é a população contida.
 > 5. Estima-se uma nova população com uma proporção com a área antiga;
 > 6. Realiza-se uma agregação de todos os setores em relação à abrangência que os contêm, realizando a soma da nova população de cada.
 
-## 4. Acesse o Mapa publicado
-Link para visualização web: [TODO]
+## 4. Acesse o Mapa Publicado
+Link para visualização web: [https://labgeolivreufpr.github.io/sig_sdgs_2025/sdg11/](https://labgeolivreufpr.github.io/sig_sdgs_2025/sdg11/)
 
 ## 5. Fontes de Dados
 **IPPUC (Instituto de Pesquisa e Planejamento Urbano de Curitiba):**
@@ -94,3 +94,4 @@ Feito cada procedimento para a geração das camadas:
 
 ## 7. Imagem Ilustrativa
 <img width="1920" height="1020" alt="image" src="https://github.com/user-attachments/assets/95310ea6-5d27-4985-91c4-7b06866299c9" />
+
