@@ -4,6 +4,7 @@ O segundo Objetivo do Desenvolvimento Sustentável tem como foco principal acaba
 
 
 ➝  Base Cartográfica
+
 Todo o processamento foi realizado no QGIS, utilizando dados de diferentes instituições públicas. As bases cartográficas e temáticas utilizadas foram:
  Malha Estadual – IBGE
  Uso e Cobertura do Solo (2015 e 2024) – MAPBIOMAS
@@ -11,6 +12,7 @@ Todo o processamento foi realizado no QGIS, utilizando dados de diferentes insti
  Áreas de Preservação Permanente (APPs) – EMBRAPA
  Pontos de Centros de Abastecimento – Prefeitura Municipal de Curitiba (Dados Abertos)
  Escolas Municipais e CMEIs – IPPUC
+
 
 ➝  Metodologia
 
@@ -53,6 +55,7 @@ Esse cenário reforça a importância de fortalecer cadeias de abastecimento loc
 
 
 ➝ Fontes
+
 https://brasil.un.org/pt-br/sdgs  Acesso em 23/11/25. 
 https://brasil.mapbiomas.org/#  Acesso em 23/11/25.
 https://www.ibge.gov.br/geociencias/organizacao-do-territorio/divisao-regional/15778-divisoes-regionais-do-brasil.html  Acesso em 23/11/25.
