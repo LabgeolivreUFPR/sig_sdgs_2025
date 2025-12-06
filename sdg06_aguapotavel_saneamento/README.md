@@ -8,7 +8,7 @@
 
 *Acesse o mapa publicado:*
 
-🔗 **Mapa Web:** [https://labgeolivre-ufpr.github.io/sig_sdgs_2025/sdg00_exemplo/](https://labgeolivre-ufpr.github.io/sig_sdgs_2025/sdg06_aguapotavel_saneamento/)
+🔗 **Mapa Web:** [https://labgeolivre-ufpr.github.io/sig_sdgs_2025/sdg06_aguapotavel_saneamento/](https://labgeolivre-ufpr.github.io/sig_sdgs_2025/sdg06_aguapotavel_saneamento/)
 
 ---
 
