@@ -56,18 +56,19 @@ Os polígonos permitem identificar se os poços estão bem distribuídos ou conc
 
 #### Mapa 1 – Nível Nacional
 
-- SNIS – Sistema Nacional de Informações sobre Saneamento
-https://www.gov.br/mdr/pt-br/assuntos/saneamento/snis
+- Censo IBGE – Informações sobre esgotamento sanitário
+https://sidra.ibge.gov.br/acervo#/A/110/T/1160
 
 - IBGE – Malha Territorial do Brasil (Estados, 2022)
-https://www.ibge.gov.br/geociencias/organizacao-do-territorio/malhas-territoriais.html
+https://www.ibge.gov.br/geociencias/organizacao-do-territorio/malhas-territoriais/15774-malhas.html
 
 #### Mapas 2 e 3 – Curitiba
 
 - IPPUC – Bases de Hidrografia, Limites, Bairros
-http://www.ippuc.org.br
+https://ippuc.org.br/geodownloads/geo.htm
 
 -Poços Tabulares – Base fornecida pela disciplina de SIG (2025)
+https://siagasweb.sgb.gov.br/layout/pesquisa_complexa.php
 
 
 6. Links dos Mapas Publicados
