@@ -1,4 +1,4 @@
-# Água Potável e Saneamento
+# ODS 06: Água Potável e Saneamento
 
   O ODS 6 faz parte da Agenda 2030 e trata da garantia de água potável, esgotamento sanitário e gestão sustentável dos recursos hídricos. Esse objetivo engloba metas de ampliação do acesso à água tratada, redução da poluição hídrica, tratamento adequado de efluentes, proteção de mananciais e fortalecimento da gestão integrada de águas superficiais e subterrâneas.
   No Brasil, o saneamento é uma das áreas mais desiguais entre regiões. A avaliação espacial por meio de SIG é uma ferramenta essencial para apoiar políticas públicas, identificar riscos ambientais, otimizar infraestruturas e compreender padrões espaciais de vulnerabilidade. Os três mapas apresentados neste repositório dialogam diretamente com diferentes metas do ODS 6, oferecendo análises espaciais complementares que vão desde a desigualdade territorial da coleta de esgoto até o risco de contaminação e a distribuição da infraestrutura de água subterrânea.
