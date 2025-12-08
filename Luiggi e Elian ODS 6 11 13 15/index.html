@@ -1,0 +1,1010 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet.photon.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        
+        /* Estilos para a legenda */
+        .leaflet-control-layers {
+            overflow-y: auto;
+            max-height: 400px;
+        }
+        
+        .legend {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            line-height: 18px;
+            color: #555;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.9;
+            border: 1px solid #ccc;
+        }
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        
+        /* Estilo para rótulos com borda branca */
+        .css_divisa_bairros_11 {
+            background-color: white;
+            padding: 2px 4px;
+            border-radius: 3px;
+            border: 2px solid white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            box-shadow: 0 0 3px rgba(0,0,0,0.3);
+        }
+        </style>
+        <title>Mapa de Análise Urbana - Curitiba</title>
+    </head>
+    <body>
+        <div id="map"></div>
+        
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet.photon.js"></script>
+        <script src="data/pop_irregular_bairrodissolvido_3.js"></script>
+        <script src="data/contagem_C_APPcontagem_4.js"></script>
+        <script src="data/contagem_R_appcontagem_5.js"></script>
+        <script src="data/contagem_H_appcontagem_6.js"></script>
+        <script src="data/Bordeada_7.js"></script>
+        <script src="data/Bordeada_8.js"></script>
+        <script src="data/simbolos_proporcionais_9.js"></script>
+        <script src="data/hidrobacias_10.js"></script>
+        <script src="data/divisa_bairros_11.js"></script>
+        <script>
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[-25.619311560470024,-49.437972464612955],[-25.31914528294722,-49.064919214135045]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        
+        // Variável para armazenar o controle de legenda
+        var legendControl = null;
+        
+        // Função para atualizar a legenda
+        function updateLegend(activeLayer) {
+            // Remover legenda anterior se existir
+            if (legendControl) {
+                map.removeControl(legendControl);
+                legendControl = null;
+            }
+            
+            if (!activeLayer) {
+                return;
+            }
+            
+            // Definir legendas para cada camada
+            var legendHTML = '';
+            
+            if (activeLayer === 'layer_pop_irregular_bairrodissolvido_3') {
+                legendHTML = '<div class="legend-title">Pessoas em edificações irregulares</div>' +
+                    '<div><i style="background: rgba(254,235,226,1.0)"></i> 0 - 282 pessoas</div>' +
+                    '<div><i style="background: rgba(252,191,193,1.0)"></i> 282 - 480 pessoas</div>' +
+                    '<div><i style="background: rgba(249,134,171,1.0)"></i> 480 - 591 pessoas</div>' +
+                    '<div><i style="background: rgba(227,73,152,1.0)"></i> 591 - 709 pessoas</div>' +
+                    '<div><i style="background: rgba(182,22,134,1.0)"></i> 709 - 841 pessoas</div>' +
+                    '<div><i style="background: rgba(122,1,119,1.0)"></i> 841 - 1057 pessoas</div>';
+            } 
+            else if (activeLayer === 'layer_contagem_C_APPcontagem_4') {
+                legendHTML = '<div class="legend-title">Densidade (por bairro)</div>' +
+                    '<div><i style="background: rgba(255,245,240,1.0)"></i> 0 - 0.015</div>' +
+                    '<div><i style="background: rgba(253,204,184,1.0)"></i> 0.015 - 0.026</div>' +
+                    '<div><i style="background: rgba(252,143,111,1.0)"></i> 0.026 - 0.036</div>' +
+                    '<div><i style="background: rgba(244,77,56,1.0)"></i> 0.036 - 0.046</div>' +
+                    '<div><i style="background: rgba(197,22,28,1.0)"></i> 0.046 - 0.068</div>' +
+                    '<div><i style="background: rgba(103,0,13,1.0)"></i> 0.068 - 0.082</div>';
+            }
+            else if (activeLayer === 'layer_contagem_R_appcontagem_5') {
+                legendHTML = '<div class="legend-title">Densidade (por região)</div>' +
+                    '<div><i style="background: rgba(247,252,245,1.0)"></i> 0.025 - 0.064</div>' +
+                    '<div><i style="background: rgba(213,239,207,1.0)"></i> 0.064 - 0.113</div>' +
+                    '<div><i style="background: rgba(158,215,152,1.0)"></i> 0.113 - 0.239</div>' +
+                    '<div><i style="background: rgba(85,181,103,1.0)"></i> 0.239 - 0.802</div>' +
+                    '<div><i style="background: rgba(29,134,65,1.0)"></i> 0.802 - 0.946</div>';
+            }
+            else if (activeLayer === 'layer_contagem_H_appcontagem_6') {
+                legendHTML = '<div class="legend-title">Densidade (por bacia)</div>' +
+                    '<div><i style="background: rgba(247,251,255,1.0)"></i> 11,651 - 11,651</div>' +
+                    '<div><i style="background: rgba(200,220,240,1.0)"></i> 11,651 - 12,549</div>' +
+                    '<div><i style="background: rgba(115,178,216,1.0)"></i> 12,549 - 31,994</div>' +
+                    '<div><i style="background: rgba(41,121,185,1.0)"></i> 31,994 - 34,713</div>';
+            }
+            else if (activeLayer === 'layer_mapadecalorrecortado_2') {
+                legendHTML = '<div class="legend-title">Mapa de Calor</div>' +
+                    '<div>Intensidade de ocupação irregular</div>' +
+                    '<div>(Vermelho = alta concentração)</div>';
+            }
+            else if (activeLayer === 'layer_Bordeada_7') {
+                legendHTML = '<div class="legend-title">Hidrografia de Curitiba</div>' +
+                    '<div><i style="background: rgba(225,89,93,1.0)"></i> Cursos d\'água</div>';
+            }
+            else if (activeLayer === 'layer_Bordeada_8') {
+                legendHTML = '<div class="legend-title">Áreas sob APP</div>' +
+                    '<div><i style="background: rgba(55,126,184,1.0)"></i> Áreas de Preservação Permanente</div>';
+            }
+            else if (activeLayer === 'layer_hidrobacias_10') {
+                legendHTML = '<div class="legend-title">Hidrobacias</div>' +
+                    '<div><i style="background: transparent; border: 2px solid rgba(53,121,177,1.0)"></i> Limites das bacias</div>';
+            }
+            else if (activeLayer === 'layer_divisa_bairros_11') {
+                legendHTML = '<div class="legend-title">Divisa de Bairros</div>' +
+                    '<div><i style="background: transparent; border: 1px solid rgba(31,1,255,1.0)"></i> Limites dos bairros</div>';
+            }
+            
+            if (legendHTML) {
+                legendControl = L.control({position: 'bottomright'});
+                legendControl.onAdd = function(map) {
+                    var div = L.DomUtil.create('div', 'legend');
+                    div.innerHTML = legendHTML;
+                    return div;
+                };
+                legendControl.addTo(map);
+            }
+        }
+        
+        // Remover funções de popup (desabilitar pop-ups)
+        function pop_pop_irregular_bairrodissolvido_3(feature, layer) {
+            // Popup desabilitado
+        }
+        
+        function pop_contagem_C_APPcontagem_4(feature, layer) {
+            // Popup desabilitado
+        }
+        
+        function pop_contagem_R_appcontagem_5(feature, layer) {
+            // Popup desabilitado
+        }
+        
+        function pop_contagem_H_appcontagem_6(feature, layer) {
+            // Popup desabilitado
+        }
+        
+        function pop_Bordeada_7(feature, layer) {
+            // Popup desabilitado
+        }
+        
+        function pop_Bordeada_8(feature, layer) {
+            // Popup desabilitado
+        }
+        
+        function pop_simbolos_proporcionais_9(feature, layer) {
+            // Popup desabilitado
+        }
+        
+        function pop_hidrobacias_10(feature, layer) {
+            // Popup desabilitado
+        }
+        
+        function pop_divisa_bairros_11(feature, layer) {
+            // Popup desabilitado
+        }
+
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        
+        // Camadas base - OpenStreetMap padrão
+        var layer_OpenStreetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            minZoom: 1,
+            maxZoom: 28,
+        });
+        
+        // Google Satélite (mantida como opção)
+        var layer_GoogleSatellite_1 = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            opacity: 1.0,
+            attribution: '<a href="https://www.google.at/permissions/geoguidelines/attr-guide.html">Map data ©2015 Google</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        
+        // Mapa de calor recortado
+        map.createPane('pane_mapadecalorrecortado_2');
+        map.getPane('pane_mapadecalorrecortado_2').style.zIndex = 402;
+        var img_mapadecalorrecortado_2 = 'data/mapadecalorrecortado_2.png';
+        var img_bounds_mapadecalorrecortado_2 = [[-25.64519054787004,-49.39025199001214],[-25.344926703643562,-49.18139252350983]];
+        var layer_mapadecalorrecortado_2 = new L.imageOverlay(img_mapadecalorrecortado_2,
+                                              img_bounds_mapadecalorrecortado_2,
+                                              {pane: 'pane_mapadecalorrecortado_2'});
+        bounds_group.addLayer(layer_mapadecalorrecortado_2);
+        
+        // Camada: Quantidade de pessoas vivendo em edificações irregulares por bairro de Curitiba
+        function style_pop_irregular_bairrodissolvido_3_0(feature) {
+            if (feature.properties['V01006'] >= 0.000000 && feature.properties['V01006'] <= 282.000000 ) {
+                return {
+                pane: 'pane_pop_irregular_bairrodissolvido_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,235,226,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['V01006'] >= 282.000000 && feature.properties['V01006'] <= 480.000000 ) {
+                return {
+                pane: 'pane_pop_irregular_bairrodissolvido_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(252,191,193,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['V01006'] >= 480.000000 && feature.properties['V01006'] <= 591.000000 ) {
+                return {
+                pane: 'pane_pop_irregular_bairrodissolvido_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(249,134,171,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['V01006'] >= 591.000000 && feature.properties['V01006'] <= 709.000000 ) {
+                return {
+                pane: 'pane_pop_irregular_bairrodissolvido_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(227,73,152,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['V01006'] >= 709.000000 && feature.properties['V01006'] <= 841.000000 ) {
+                return {
+                pane: 'pane_pop_irregular_bairrodissolvido_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(182,22,134,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['V01006'] >= 841.000000 && feature.properties['V01006'] <= 1057.000000 ) {
+                return {
+                pane: 'pane_pop_irregular_bairrodissolvido_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(122,1,119,1.0)',
+                interactive: false,
+            }
+            }
+            // Retorno padrão caso nenhuma condição seja atendida
+            return {
+                pane: 'pane_pop_irregular_bairrodissolvido_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,235,226,1.0)',
+                interactive: false,
+            }
+        }
+        map.createPane('pane_pop_irregular_bairrodissolvido_3');
+        map.getPane('pane_pop_irregular_bairrodissolvido_3').style.zIndex = 403;
+        map.getPane('pane_pop_irregular_bairrodissolvido_3').style['mix-blend-mode'] = 'normal';
+        var layer_pop_irregular_bairrodissolvido_3 = new L.geoJson(json_pop_irregular_bairrodissolvido_3, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_pop_irregular_bairrodissolvido_3',
+            layerName: 'layer_pop_irregular_bairrodissolvido_3',
+            pane: 'pane_pop_irregular_bairrodissolvido_3',
+            onEachFeature: pop_pop_irregular_bairrodissolvido_3,
+            style: style_pop_irregular_bairrodissolvido_3_0,
+        });
+        bounds_group.addLayer(layer_pop_irregular_bairrodissolvido_3);
+        
+        // Camada: Edificações irregulares em cima de APP por Bairro de Curitiba
+        function style_contagem_C_APPcontagem_4_0(feature) {
+            if (feature.properties['densidade'] >= 0.000000 && feature.properties['densidade'] <= 0.015251 ) {
+                return {
+                pane: 'pane_contagem_C_APPcontagem_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,245,240,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['densidade'] >= 0.015251 && feature.properties['densidade'] <= 0.026371 ) {
+                return {
+                pane: 'pane_contagem_C_APPcontagem_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,204,184,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['densidade'] >= 0.026371 && feature.properties['densidade'] <= 0.036358 ) {
+                return {
+                pane: 'pane_contagem_C_APPcontagem_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(252,143,111,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['densidade'] >= 0.036358 && feature.properties['densidade'] <= 0.046497 ) {
+                return {
+                pane: 'pane_contagem_C_APPcontagem_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(244,77,56,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['densidade'] >= 0.046497 && feature.properties['densidade'] <= 0.067886 ) {
+                return {
+                pane: 'pane_contagem_C_APPcontagem_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(197,22,28,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['densidade'] >= 0.067886 && feature.properties['densidade'] <= 0.082177 ) {
+                return {
+                pane: 'pane_contagem_C_APPcontagem_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(103,0,13,1.0)',
+                interactive: false,
+            }
+            }
+            // Retorno padrão
+            return {
+                pane: 'pane_contagem_C_APPcontagem_4',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,245,240,1.0)',
+                interactive: false,
+            }
+        }
+        map.createPane('pane_contagem_C_APPcontagem_4');
+        map.getPane('pane_contagem_C_APPcontagem_4').style.zIndex = 404;
+        map.getPane('pane_contagem_C_APPcontagem_4').style['mix-blend-mode'] = 'normal';
+        var layer_contagem_C_APPcontagem_4 = new L.geoJson(json_contagem_C_APPcontagem_4, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_contagem_C_APPcontagem_4',
+            layerName: 'layer_contagem_C_APPcontagem_4',
+            pane: 'pane_contagem_C_APPcontagem_4',
+            onEachFeature: pop_contagem_C_APPcontagem_4,
+            style: style_contagem_C_APPcontagem_4_0,
+        });
+        bounds_group.addLayer(layer_contagem_C_APPcontagem_4);
+        
+        // Camada: Edificações irregulares em cima de APP por Região de Curitiba
+        function style_contagem_R_appcontagem_5_0(feature) {
+            if (feature.properties['densidade'] >= 0.025403 && feature.properties['densidade'] <= 0.025403 ) {
+                return {
+                pane: 'pane_contagem_R_appcontagem_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(247,252,245,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['densidade'] >= 0.025403 && feature.properties['densidade'] <= 0.063511 ) {
+                return {
+                pane: 'pane_contagem_R_appcontagem_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(213,239,207,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['densidade'] >= 0.063511 && feature.properties['densidade'] <= 0.113017 ) {
+                return {
+                pane: 'pane_contagem_R_appcontagem_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(158,215,152,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['densidade'] >= 0.113017 && feature.properties['densidade'] <= 0.238609 ) {
+                return {
+                pane: 'pane_contagem_R_appcontagem_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(85,181,103,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['densidade'] >= 0.238609 && feature.properties['densidade'] <= 0.801668 ) {
+                return {
+                pane: 'pane_contagem_R_appcontagem_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(29,134,65,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['densidade'] >= 0.801668 && feature.properties['densidade'] <= 0.945732 ) {
+                return {
+                pane: 'pane_contagem_R_appcontagem_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(0,68,27,1.0)',
+                interactive: false,
+            }
+            }
+            // Retorno padrão
+            return {
+                pane: 'pane_contagem_R_appcontagem_5',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(247,252,245,1.0)',
+                interactive: false,
+            }
+        }
+        map.createPane('pane_contagem_R_appcontagem_5');
+        map.getPane('pane_contagem_R_appcontagem_5').style.zIndex = 405;
+        map.getPane('pane_contagem_R_appcontagem_5').style['mix-blend-mode'] = 'normal';
+        var layer_contagem_R_appcontagem_5 = new L.geoJson(json_contagem_R_appcontagem_5, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_contagem_R_appcontagem_5',
+            layerName: 'layer_contagem_R_appcontagem_5',
+            pane: 'pane_contagem_R_appcontagem_5',
+            onEachFeature: pop_contagem_R_appcontagem_5,
+            style: style_contagem_R_appcontagem_5_0,
+        });
+        bounds_group.addLayer(layer_contagem_R_appcontagem_5);
+        
+        // Camada: Edificações irregulares em cima de APP por Bacia hidrográfica
+        function style_contagem_H_appcontagem_6_0(feature) {
+            if (feature.properties['densidade'] >= 11650.793623 && feature.properties['densidade'] <= 11650.793623 ) {
+                return {
+                pane: 'pane_contagem_H_appcontagem_6',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(247,251,255,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['densidade'] >= 11650.793623 && feature.properties['densidade'] <= 11650.793623 ) {
+                return {
+                pane: 'pane_contagem_H_appcontagem_6',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(200,220,240,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['densidade'] >= 11650.793623 && feature.properties['densidade'] <= 12549.187890 ) {
+                return {
+                pane: 'pane_contagem_H_appcontagem_6',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(115,178,216,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['densidade'] >= 12549.187890 && feature.properties['densidade'] <= 31993.742033 ) {
+                return {
+                pane: 'pane_contagem_H_appcontagem_6',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(41,121,185,1.0)',
+                interactive: false,
+            }
+            }
+            if (feature.properties['densidade'] >= 31993.742033 && feature.properties['densidade'] <= 34712.772975 ) {
+                return {
+                pane: 'pane_contagem_H_appcontagem_6',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(8,48,107,1.0)',
+                interactive: false,
+            }
+            }
+            // Retorno padrão
+            return {
+                pane: 'pane_contagem_H_appcontagem_6',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(247,251,255,1.0)',
+                interactive: false,
+            }
+        }
+        map.createPane('pane_contagem_H_appcontagem_6');
+        map.getPane('pane_contagem_H_appcontagem_6').style.zIndex = 406;
+        map.getPane('pane_contagem_H_appcontagem_6').style['mix-blend-mode'] = 'normal';
+        var layer_contagem_H_appcontagem_6 = new L.geoJson(json_contagem_H_appcontagem_6, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_contagem_H_appcontagem_6',
+            layerName: 'layer_contagem_H_appcontagem_6',
+            pane: 'pane_contagem_H_appcontagem_6',
+            onEachFeature: pop_contagem_H_appcontagem_6,
+            style: style_contagem_H_appcontagem_6_0,
+        });
+        bounds_group.addLayer(layer_contagem_H_appcontagem_6);
+        
+        // Camada: Hidrografia de Curitiba
+        function style_Bordeada_7_0() {
+            return {
+                pane: 'pane_Bordeada_7',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(225,89,93,1.0)',
+                interactive: false,
+            }
+        }
+        map.createPane('pane_Bordeada_7');
+        map.getPane('pane_Bordeada_7').style.zIndex = 407;
+        map.getPane('pane_Bordeada_7').style['mix-blend-mode'] = 'normal';
+        var layer_Bordeada_7 = new L.geoJson(json_Bordeada_7, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_Bordeada_7',
+            layerName: 'layer_Bordeada_7',
+            pane: 'pane_Bordeada_7',
+            onEachFeature: pop_Bordeada_7,
+            style: style_Bordeada_7_0,
+        });
+        bounds_group.addLayer(layer_Bordeada_7);
+        
+        // Camada: Áreas sob APP
+        function style_Bordeada_8_0() {
+            return {
+                pane: 'pane_Bordeada_8',
+                opacity: 1,
+                color: 'rgba(38,89,128,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(55,126,184,1.0)',
+                interactive: false,
+            }
+        }
+        map.createPane('pane_Bordeada_8');
+        map.getPane('pane_Bordeada_8').style.zIndex = 408;
+        map.getPane('pane_Bordeada_8').style['mix-blend-mode'] = 'normal';
+        var layer_Bordeada_8 = new L.geoJson(json_Bordeada_8, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_Bordeada_8',
+            layerName: 'layer_Bordeada_8',
+            pane: 'pane_Bordeada_8',
+            onEachFeature: pop_Bordeada_8,
+            style: style_Bordeada_8_0,
+        });
+        bounds_group.addLayer(layer_Bordeada_8);
+        
+        // Camada: símbolos proporcionais (não usada)
+        function style_simbolos_proporcionais_9_0() {
+            return {
+                pane: 'pane_simbolos_proporcionais_9',
+                interactive: false,
+            }
+        }
+        map.createPane('pane_simbolos_proporcionais_9');
+        map.getPane('pane_simbolos_proporcionais_9').style.zIndex = 409;
+        map.getPane('pane_simbolos_proporcionais_9').style['mix-blend-mode'] = 'normal';
+        var layer_simbolos_proporcionais_9 = new L.geoJson(json_simbolos_proporcionais_9, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_simbolos_proporcionais_9',
+            layerName: 'layer_simbolos_proporcionais_9',
+            pane: 'pane_simbolos_proporcionais_9',
+            onEachFeature: pop_simbolos_proporcionais_9,
+            style: style_simbolos_proporcionais_9_0,
+        });
+        bounds_group.addLayer(layer_simbolos_proporcionais_9);
+        
+        // Camada: Hidrobacias
+        function style_hidrobacias_10_0() {
+            return {
+                pane: 'pane_hidrobacias_10',
+                opacity: 1,
+                color: 'rgba(53,121,177,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 4.0,
+                fillOpacity: 0,
+                interactive: false,
+            }
+        }
+        map.createPane('pane_hidrobacias_10');
+        map.getPane('pane_hidrobacias_10').style.zIndex = 410;
+        map.getPane('pane_hidrobacias_10').style['mix-blend-mode'] = 'normal';
+        var layer_hidrobacias_10 = new L.geoJson(json_hidrobacias_10, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_hidrobacias_10',
+            layerName: 'layer_hidrobacias_10',
+            pane: 'pane_hidrobacias_10',
+            onEachFeature: pop_hidrobacias_10,
+            style: style_hidrobacias_10_0,
+        });
+        bounds_group.addLayer(layer_hidrobacias_10);
+        
+        // Camada: Divisa de Bairros
+        function style_divisa_bairros_11_0() {
+            return {
+                pane: 'pane_divisa_bairros_11',
+                opacity: 1,
+                color: 'rgba(31,1,255,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fillOpacity: 0,
+                interactive: false,
+            }
+        }
+        map.createPane('pane_divisa_bairros_11');
+        map.getPane('pane_divisa_bairros_11').style.zIndex = 411;
+        map.getPane('pane_divisa_bairros_11').style['mix-blend-mode'] = 'normal';
+        var layer_divisa_bairros_11 = new L.geoJson(json_divisa_bairros_11, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_divisa_bairros_11',
+            layerName: 'layer_divisa_bairros_11',
+            pane: 'pane_divisa_bairros_11',
+            onEachFeature: pop_divisa_bairros_11,
+            style: style_divisa_bairros_11_0,
+        });
+        bounds_group.addLayer(layer_divisa_bairros_11);
+        
+        setBounds();
+        
+        // Adicionar controle de camadas
+        var baseLayers = {
+            "OpenStreetMap": layer_OpenStreetMap,
+            "Google Satélite": layer_GoogleSatellite_1
+        };
+        
+        var overlayLayers = {
+            "Mapa de calor": layer_mapadecalorrecortado_2,
+            "Quantidade de pessoas vivendo em edificações irregulares por bairro de Curitiba": layer_pop_irregular_bairrodissolvido_3,
+            "Edificações irregulares em cima de APP por Bairro de Curitiba": layer_contagem_C_APPcontagem_4,
+            "Edificações irregulares em cima de APP por Região de Curitiba": layer_contagem_R_appcontagem_5,
+            "Edificações irregulares em cima de APP por Bacia hidrográfica": layer_contagem_H_appcontagem_6,
+            "Hidrografia de Curitiba": layer_Bordeada_7,
+            "Áreas sob APP": layer_Bordeada_8,
+            "Hidrobacias": layer_hidrobacias_10,
+            "Divisa de Bairros": layer_divisa_bairros_11
+        };
+        
+        // Adicionar camada base padrão (OpenStreetMap)
+        map.addLayer(layer_OpenStreetMap);
+        
+        // Adicionar controle de camadas
+        var layerControl = L.control.layers(baseLayers, overlayLayers, {
+            collapsed: false,
+            position: 'topright'
+        }).addTo(map);
+        
+        // Configurar eventos para mostrar/ocultar legenda
+        function onOverlayAdd(e) {
+            updateLegend(e.layer.layerName || e.name);
+        }
+        
+        function onOverlayRemove(e) {
+            // Verificar se ainda há camadas ativas
+            var hasActive = false;
+            var activeLayerName = null;
+            
+            for (var key in overlayLayers) {
+                if (map.hasLayer(overlayLayers[key])) {
+                    activeLayerName = overlayLayers[key].options.layerName || key;
+                    hasActive = true;
+                    break;
+                }
+            }
+            
+            if (!hasActive) {
+                activeLayerName = null;
+            }
+            updateLegend(activeLayerName);
+        }
+        
+        // Adicionar eventos a cada camada
+        for (var key in overlayLayers) {
+            overlayLayers[key].on('add', function() {
+                onOverlayAdd({layer: this, name: key});
+            });
+            
+            overlayLayers[key].on('remove', function() {
+                onOverlayRemove({layer: this, name: key});
+            });
+        }
+        
+        // Configurar rótulos para as camadas especificadas
+        var i = 0;
+        layer_contagem_R_appcontagem_5.eachLayer(function(layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((layer.feature.properties['NM_REGIONA'] !== null?String('<div style="color: #323232; font-size: 7pt; font-family: \'Open Sans\', sans-serif;">' + layer.feature.properties['NM_REGIONA']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_contagem_R_appcontagem_5'});
+            labels.push(layer);
+            totalMarkers += 1;
+              layer.added = true;
+              addLabel(layer, i);
+              i++;
+        });
+        
+        var i = 0;
+        layer_contagem_H_appcontagem_6.eachLayer(function(layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((layer.feature.properties['NOME_BACIA'] !== null?String('<div style="color: #323232; font-size: 10pt; font-family: \'Open Sans\', sans-serif;">' + layer.feature.properties['NOME_BACIA']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_contagem_H_appcontagem_6'});
+            labels.push(layer);
+            totalMarkers += 1;
+              layer.added = true;
+              addLabel(layer, i);
+              i++;
+        });
+        
+        // Adicionar rótulos para Divisa de Bairros com borda branca
+        var i = 0;
+        layer_divisa_bairros_11.eachLayer(function(layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((layer.feature.properties['NOME'] !== null?String('<div style="color: #000000; font-size: 8pt; font-weight: bold; font-family: \'Open Sans\', sans-serif; text-shadow: 1px 1px 2px white, -1px -1px 2px white, 1px -1px 2px white, -1px 1px 2px white;">' + layer.feature.properties['NOME']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_divisa_bairros_11'});
+            labels.push(layer);
+            totalMarkers += 1;
+            layer.added = true;
+            addLabel(layer, i);
+            i++;
+        });
+        
+        // Adicionar rótulos para Hidrobacias
+        var i = 0;
+        layer_hidrobacias_10.eachLayer(function(layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((layer.feature.properties['NOME_BACIA'] !== null?String('<div style="color: #323232; font-size: 9pt; font-family: \'Open Sans\', sans-serif; background-color: rgba(255,255,255,0.7); padding: 2px 4px; border-radius: 3px;">' + layer.feature.properties['NOME_BACIA']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_hidrobacias_10'});
+            labels.push(layer);
+            totalMarkers += 1;
+            layer.added = true;
+            addLabel(layer, i);
+            i++;
+        });
+        
+        L.ImageOverlay.include({
+            getBounds: function () {
+                return this._bounds;
+            }
+        });
+        
+        // Atualizar resetLabels para incluir todas as camadas com rótulos
+        resetLabels([layer_pop_irregular_bairrodissolvido_3,layer_contagem_R_appcontagem_5,layer_contagem_H_appcontagem_6,layer_divisa_bairros_11,layer_hidrobacias_10]);
+        map.on("zoomend", function(){
+            resetLabels([layer_pop_irregular_bairrodissolvido_3,layer_contagem_R_appcontagem_5,layer_contagem_H_appcontagem_6,layer_divisa_bairros_11,layer_hidrobacias_10]);
+        });
+        map.on("layeradd", function(){
+            resetLabels([layer_pop_irregular_bairrodissolvido_3,layer_contagem_R_appcontagem_5,layer_contagem_H_appcontagem_6,layer_divisa_bairros_11,layer_hidrobacias_10]);
+        });
+        map.on("layerremove", function(){
+            resetLabels([layer_pop_irregular_bairrodissolvido_3,layer_contagem_R_appcontagem_5,layer_contagem_H_appcontagem_6,layer_divisa_bairros_11,layer_hidrobacias_10]);
+        });
+        
+        // Inicializar com algumas camadas visíveis
+        map.addLayer(layer_mapadecalorrecortado_2);
+        map.addLayer(layer_divisa_bairros_11);
+        map.addLayer(layer_hidrobacias_10);
+        
+        // Atualizar legenda para a primeira camada ativa
+        setTimeout(function() {
+            updateLegend('layer_divisa_bairros_11');
+        }, 500);
+        </script>        
+    </body>
+</html>
