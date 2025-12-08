@@ -9,7 +9,7 @@
 
 ### Aplicação Web (WebGIS)
 O mapa interativo contendo todas as camadas processadas e funcionalidades de navegação está publicado e acessível através do link abaixo:
-* **Link de Acesso:** [https://labgeolivre.github.io/sig_sdgs_2025/sdg11_cidades_sustentaveis/](https://labgeolivre.github.io/sig_sdgs_2025/sdg11_cidades_sustentaveis/)
+* **Link de Acesso:** [https://labgeolivre.github.io/sig_sdgs_2025/sdg11_cidades_sustentaveis/](https://labgeolivreufpr.github.io/sig_sdgs_2025/sdg11_cidades_sustentaveis/)
 
 ### Pranchas Cartográficas (Download PDF)
 Para visualização estática e impressão em alta resolução (formato A4), disponibilizam-se os seguintes arquivos:
@@ -67,3 +67,4 @@ A publicação do WebGIS utilizou a biblioteca **Leaflet**, gerada através do p
 2.  **Narrativa Interativa:** Implementação de um painel lateral dinâmico que atualiza as informações técnicas e metodológicas conforme a camada ativa selecionada.
 3.  **Gerenciamento de Camadas:** Criação de um controle de camadas personalizado (Layer Control) para permitir a visualização seletiva dos dados.
 4.  **Legendas Externas:** Utilização de imagens estáticas para as legendas complexas (gradientes raster), garantindo a fidelidade visual do projeto cartográfico original.
+
