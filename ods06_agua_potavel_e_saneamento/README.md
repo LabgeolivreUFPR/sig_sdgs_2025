@@ -62,7 +62,7 @@ https://sidra.ibge.gov.br/acervo#/A/110/T/1160
 - IBGE – Malha Territorial do Brasil (Estados, 2022)
 https://www.ibge.gov.br/geociencias/organizacao-do-territorio/malhas-territoriais/15774-malhas.html
 
-#### Mapas 2 e 3 – Curitiba
+#### Mapas 2 e 3 - Curitiba
 
 - IPPUC – Bases de Hidrografia, Limites, Bairros
 https://ippuc.org.br/geodownloads/geo.htm
@@ -72,7 +72,7 @@ https://siagasweb.sgb.gov.br/layout/pesquisa_complexa.php
 
 
 6. Links dos Mapas Publicados
-(Substituir pelos seus links do GitHub Pages)
+
 
 🔗 Mapa 1:
 🔗 Mapa 2:
