@@ -871,8 +871,8 @@
             "Edificações irregulares em cima de APP por Bacia hidrográfica": layer_contagem_H_appcontagem_6,
             "Hidrografia de Curitiba": layer_Bordeada_7,
             "Áreas sob APP": layer_Bordeada_8,
-            "Hidrobacias": layer_hidrobacias_10,
-            "Divisa de Bairros": layer_divisa_bairros_11
+            "Divisa de Bairros": layer_hidrobacias_10,
+            "Hidrobacias": layer_divisa_bairros_11
         };
         
         // Adicionar camada base padrão (OpenStreetMap)
@@ -998,12 +998,11 @@
         
         // Inicializar com algumas camadas visíveis
         map.addLayer(layer_mapadecalorrecortado_2);
-        map.addLayer(layer_divisa_bairros_11);
         map.addLayer(layer_hidrobacias_10);
         
         // Atualizar legenda para a primeira camada ativa
         setTimeout(function() {
-            updateLegend('layer_divisa_bairros_11');
+            updateLegend('layer_hidrobacias_10');
         }, 500);
         </script>        
     </body>
